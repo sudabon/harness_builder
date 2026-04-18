@@ -1,0 +1,14 @@
+---
+description: Cursor rules for {{ project_name }}
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Cursor Project Rules
+
+- Work within the current project scope.
+- Prefer minimal diffs and explicit verification.
+- Respect these prohibited actions: {{ prohibited_actions or "未設定" }}
+- Review mode: {{ review_policy or "未設定" }}
+- Main test stack: {{ tests_csv }}

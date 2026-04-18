@@ -1,0 +1,58 @@
+PRESETS = [
+    {
+        "id": "fastapi-react",
+        "name": "FastAPI + React",
+        "description": "Python API and React SPA.",
+        "answers": {
+            "project_kind": "Web",
+            "languages": ["Python", "TypeScript"],
+            "frameworks": ["FastAPI", "React"],
+            "ai_tools": ["Claude", "Codex", "Cursor"],
+            "test_strategy": ["pytest", "jest"],
+            "lint_format": ["ruff", "eslint", "prettier"],
+            "review_policy": "厳格",
+        },
+    },
+    {
+        "id": "nextjs",
+        "name": "Next.js",
+        "description": "Single-framework web application preset.",
+        "answers": {
+            "project_kind": "Web",
+            "languages": ["TypeScript"],
+            "frameworks": ["Next.js"],
+            "ai_tools": ["Claude", "Codex"],
+            "test_strategy": ["jest"],
+            "lint_format": ["eslint", "prettier"],
+            "review_policy": "柔軟",
+        },
+    },
+    {
+        "id": "python-api",
+        "name": "Python API",
+        "description": "Backend-only API service preset.",
+        "answers": {
+            "project_kind": "API",
+            "languages": ["Python"],
+            "frameworks": ["FastAPI"],
+            "ai_tools": ["Claude", "Codex"],
+            "test_strategy": ["pytest"],
+            "lint_format": ["ruff"],
+            "review_policy": "厳格",
+        },
+    },
+    {
+        "id": "saas-web-app",
+        "name": "SaaS Web App",
+        "description": "Preset for a product-style web application.",
+        "answers": {
+            "project_kind": "SaaS",
+            "languages": ["TypeScript", "Python"],
+            "frameworks": ["React", "FastAPI"],
+            "ai_tools": ["Claude", "Cursor"],
+            "test_strategy": ["pytest", "jest"],
+            "lint_format": ["ruff", "eslint", "prettier"],
+            "review_policy": "厳格",
+        },
+    },
+]

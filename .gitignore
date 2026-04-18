@@ -1,0 +1,31 @@
+# MacOS
+**/.DS_Store
+**/.Thumbs.db
+
+# IDE
+.vscode/
+.specstory/
+.smart-edit/
+.serena/
+
+# CodingAgent
+.claude/
+.cursor/
+.codex/
+
+# Cursor
+.cursorrules
+.cursorignore
+.cursorindexingignore
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.db
+backend/.venv/
+frontend/node_modules/
