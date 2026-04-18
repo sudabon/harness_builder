@@ -1,0 +1,15 @@
+# Review Prompt
+
+Review the current diff for `{{ project_name }}`.
+
+## Focus
+
+- Functional regressions
+- Missing tests
+- Security or data-loss risks
+- Violations of `{{ review_policy or "未設定" }}` review policy
+
+## Project Constraints
+
+- Forbidden actions: {{ prohibited_actions or "未設定" }}
+- CI command: {{ ci_command or "未設定" }}

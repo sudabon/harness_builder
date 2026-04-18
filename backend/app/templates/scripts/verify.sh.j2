@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running verification for {{ project_name }}"
+
+{% if lint_format %}
+echo "Lint / format: {{ lint_csv }}"
+{% for tool in lint_format %}
+{% if tool|lower == "ruff" %}
+ruff check .
+{% elif tool|lower == "eslint" %}
+pnpm exec eslint .
+{% elif tool|lower == "prettier" %}
+pnpm exec prettier --check .
+{% else %}
+echo "Skipping unsupported lint tool: {{ tool }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if test_strategy %}
+echo "Tests: {{ tests_csv }}"
+{% for tool in test_strategy %}
+{% if tool|lower == "pytest" %}
+pytest
+{% elif tool|lower == "jest" %}
+pnpm exec jest
+{% else %}
+echo "Skipping unsupported test tool: {{ tool }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if ci_command %}
+echo "CI reference command: {{ ci_command }}"
+{% endif %}

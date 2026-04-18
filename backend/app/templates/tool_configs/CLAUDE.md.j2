@@ -1,0 +1,20 @@
+# Claude Project Guide
+
+## Stack Summary
+
+- Languages: {{ languages_csv }}
+- Frameworks: {{ frameworks_csv }}
+- Tests: {{ tests_csv }}
+- Lint / Format: {{ lint_csv }}
+
+## Review Mode
+
+- Review policy: {{ review_policy or "未設定" }}
+- Never violate: {{ prohibited_actions or "未設定" }}
+
+## Execution Checklist
+
+1. Restate the task and affected files.
+2. Read existing code before editing.
+3. Run the relevant verify command.
+4. Report any unverified assumptions.

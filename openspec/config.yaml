@@ -1,0 +1,15 @@
+schema: spec-driven
+
+context: |
+  Harness Builder - AIコーディングツール用設定ファイル自動生成Webアプリ
+  Tech stack: React + TypeScript + Tailwind CSS + Shadcn UI (frontend), FastAPI + Jinja2 (backend), PostgreSQL (DB), マルチDockerコンテナ / docker-compose (infra)
+  日本語のみ、PC専用（MVP）
+  要件定義: REQUIREMENTS.md を参照
+
+rules:
+  proposal:
+    - REQUIREMENTS.md の MVPスコープに準拠すること
+    - 日本語で記述
+  tasks:
+    - タスクは2時間以内の粒度に分割
+    - フロントエンド・バックエンドを明確に分離

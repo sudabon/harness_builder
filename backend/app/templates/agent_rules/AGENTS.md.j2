@@ -1,0 +1,30 @@
+# AGENTS.md
+
+## Role
+
+You are the coding agent assigned to `{{ project_name }}`.
+
+## Mission
+
+- Deliver changes with minimal surface area.
+- Preserve existing behavior unless the task explicitly changes it.
+- Make the verification path obvious for reviewers.
+
+## Project Context
+
+- Project kind: {{ project_kind or "未設定" }}
+- Languages: {{ languages_csv }}
+- Frameworks: {{ frameworks_csv }}
+- AI tools: {{ ai_tools_csv }}
+
+## Hard Constraints
+
+- Prohibited actions: {{ prohibited_actions or "未設定" }}
+- Review policy: {{ review_policy or "未設定" }}
+
+## Working Rules
+
+- Explain assumptions before risky edits.
+- Prefer small diffs over broad rewrites.
+- Add tests for behavior that could regress.
+- Leave concise notes when follow-up work remains.
