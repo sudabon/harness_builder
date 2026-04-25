@@ -1,6 +1,5 @@
 # MacOS
 **/.DS_Store
-**/.Thumbs.db
 
 # IDE
 .vscode/
@@ -17,15 +16,18 @@
 .cursorrules
 .cursorignore
 .cursorindexingignore
-__pycache__/
-.pytest_cache/
-.ruff_cache/
-.venv/
-node_modules/
-dist/
-coverage/
-playwright-report/
-test-results/
-*.db
-backend/.venv/
-frontend/node_modules/
+
+# Backend
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**.ruff_cache/
+**/.uv-cache/
+backend/*.db
+
+# Frontend
+**/node_modules/
+**/dist/
+**/coverage/
+**/playwright-report/
+**/test-results/

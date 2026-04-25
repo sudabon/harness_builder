@@ -4,10 +4,10 @@ from io import BytesIO
 
 from fastapi import APIRouter, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DbSession, OwnedProject
-from app.db.models import GeneratedFile, Project
+from app.core.questionnaire import missing_required_answer_keys
+from app.db.models import Project
 from app.schemas.project import (
     AnswersUpdateRequest,
     FileUpdateRequest,
@@ -66,17 +66,7 @@ def update_answers(
 @router.post("/{project_id}/generate", response_model=GeneratedFilesListResponse)
 def generate_files(project: OwnedProject, db: DbSession) -> GeneratedFilesListResponse:
     answers = get_project_answers(db, project)
-    required = [
-        "project_kind",
-        "languages",
-        "frameworks",
-        "ai_tools",
-        "test_strategy",
-        "lint_format",
-        "prohibited_actions",
-        "review_policy",
-    ]
-    missing = [field for field in required if not answers.get(field)]
+    missing = missing_required_answer_keys(answers)
     if missing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
