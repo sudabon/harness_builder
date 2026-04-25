@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.questionnaire import answer_value_as_list as _answer_value_as_list
 from app.db.models import Project, QuestionnaireAnswer
 
 
@@ -16,6 +17,10 @@ def serialize_answer(value: Any) -> str:
 
 def deserialize_answer(raw: str) -> Any:
     return json.loads(raw)
+
+
+def answer_value_as_list(value: Any) -> list[str]:
+    return _answer_value_as_list(value)
 
 
 def get_project_answers(session: Session, project: Project) -> dict[str, Any]:
