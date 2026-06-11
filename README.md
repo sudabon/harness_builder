@@ -60,13 +60,13 @@ Compose ではフロントに `VITE_API_URL=http://localhost:8000/api/v1` が渡
 
 ### バックエンド
 
-PostgreSQL を別途用意するか、SQLite で試す場合は `DATABASE_URL` を設定します。
+PostgreSQL（`docker-compose.yml` の `db` サービス）を起動してからバックエンドを実行します。接続先は `DATABASE_URL` で上書きできます。
 
 ```bash
 cd backend
 uv sync --group dev
-# 例: PostgreSQL を使う場合
-# export DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/harness_builder
+# 必要に応じて接続先を変更
+# export DATABASE_URL=postgresql+psycopg2://user:pass@localhost:5432/harness_builder
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -76,7 +76,7 @@ uv run uvicorn app.main:app --reload --port 8000
 
 | 変数 | 説明 |
 | --- | --- |
-| `DATABASE_URL` | DB 接続文字列（未設定時は SQLite ファイル） |
+| `DATABASE_URL` | DB 接続文字列（未設定時はローカル PostgreSQL） |
 | `SESSION_SECRET` | セッション署名用シークレット |
 | `FRONTEND_ORIGIN` | CORS 許可オリジン（例: `http://localhost:5173`） |
 | `SESSION_COOKIE_SECURE` | 本番など HTTPS 時は `true` を検討 |

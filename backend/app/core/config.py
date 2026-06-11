@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     app_name: str = "Harness Builder API"
     api_prefix: str = "/api/v1"
     database_url: str = Field(
-        default="sqlite:///./harness_builder.db",
+        default="postgresql+psycopg2://harness:harness@localhost:5432/harness_builder",
         alias="DATABASE_URL",
     )
     session_secret: str = Field(
