@@ -1,3 +1,10 @@
+import os
+
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql+psycopg2://laborman:laborman@localhost:5432/laborman",
+)
+
 from collections.abc import Generator
 
 import pytest

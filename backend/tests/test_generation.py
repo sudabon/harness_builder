@@ -248,6 +248,38 @@ def _generate_and_get_file(client, project_id: str, file_path: str) -> dict:
     )
 
 
+def test_update_file_marks_edited_only_when_content_changes(client):
+    project_id = _create_seeded_project(client, ai_tools=["Codex"])
+    agents_file = _generate_and_get_file(client, project_id, "AGENTS.md")
+    original_content = client.get(
+        f"/api/v1/projects/{project_id}/files/{agents_file['id']}"
+    ).json()["content"]
+
+    unchanged = client.put(
+        f"/api/v1/projects/{project_id}/files/{agents_file['id']}",
+        json={"content": original_content},
+    )
+    assert unchanged.status_code == 200
+    assert unchanged.json()["is_edited"] is False
+
+    changed = client.put(
+        f"/api/v1/projects/{project_id}/files/{agents_file['id']}",
+        json={"content": "# 手動編集済み\n"},
+    )
+    assert changed.status_code == 200
+    assert changed.json()["is_edited"] is True
+
+
+def test_generate_response_is_sorted_by_file_path(client):
+    project_id = _create_seeded_project(client, ai_tools=["Codex"])
+
+    generated = client.post(f"/api/v1/projects/{project_id}/generate")
+    assert generated.status_code == 200
+
+    paths = [item["file_path"] for item in generated.json()["items"]]
+    assert paths == sorted(paths)
+
+
 def test_edited_file_is_protected_from_normal_regeneration(client):
     project_id = _create_seeded_project(client, ai_tools=["Codex"])
     agents_file = _generate_and_get_file(client, project_id, "AGENTS.md")

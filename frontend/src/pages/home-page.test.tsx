@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AppHomePage } from "@/pages/home-page";
 
-vi.mock("@/contexts/auth-context", () => ({
+vi.mock("@/contexts/use-auth", () => ({
   useAuth: () => ({ user: null }),
 }));
 

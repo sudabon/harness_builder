@@ -90,6 +90,16 @@ def test_update_answers_accepts_normalizable_payload_shapes(client):
     )
 
     assert response.status_code == 200
+    answers = response.json()["answers"]
+    assert answers["project_kind"] == "Web"
+    assert answers["languages"] == ["Python"]
+    assert answers["frameworks"] == ["FastAPI"]
+    assert answers["ai_tools"] == ["Codex"]
+    assert answers["test_strategy"] == ["pytest"]
+    assert answers["lint_format"] == ["ruff"]
+    assert answers["prohibited_actions"] == "本番DBの直接変更禁止"
+    assert answers["review_policy"] == "厳格"
+
     generated = client.post(f"/api/v1/projects/{project_id}/generate")
     assert generated.status_code == 200
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
 
@@ -7,11 +7,7 @@ interface CodeViewerProps {
 }
 
 export function CodeViewer({ content }: CodeViewerProps) {
-  const [html, setHtml] = useState("");
-
-  useEffect(() => {
-    setHtml(hljs.highlightAuto(content).value);
-  }, [content]);
+  const html = useMemo(() => hljs.highlightAuto(content).value, [content]);
 
   return (
     <pre className="max-h-[60vh] overflow-auto rounded-3xl bg-[#0b1115] p-5 text-sm text-slate-100">

@@ -8,6 +8,7 @@ from app.core.questionnaire import (
     QUESTIONNAIRE_FIELDS,
     REQUIRED_ANSWER_KEYS,
     missing_required_answer_keys,
+    normalize_answers_payload_for_storage,
     normalize_questionnaire_answers,
     validate_answers_payload,
     validate_preset_answers,
@@ -110,6 +111,26 @@ def test_validate_answers_payload_accepts_normalizable_shapes():
     assert validate_answers_payload({"project_kind": ["Web"]}) == []
     assert validate_answers_payload({"prohibited_actions": ["rm -rf 禁止"]}) == []
     assert validate_answers_payload({"review_policy": ""}) == []
+
+
+def test_normalize_answers_payload_for_storage_persists_canonical_shapes():
+    normalized = normalize_answers_payload_for_storage(
+        {
+            "project_kind": ["Web"],
+            "languages": "Python",
+            "ai_tools": "Codex",
+            "prohibited_actions": ["rm -rf 禁止"],
+            "future_key": {"custom": True},
+        }
+    )
+
+    assert normalized == {
+        "project_kind": "Web",
+        "languages": ["Python"],
+        "ai_tools": ["Codex"],
+        "prohibited_actions": "rm -rf 禁止",
+        "future_key": {"custom": True},
+    }
 
 
 def test_validate_answers_payload_passes_unknown_keys_through():

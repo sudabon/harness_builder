@@ -220,6 +220,16 @@ def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
     return errors
 
 
+def normalize_answers_payload_for_storage(answers: dict[str, Any]) -> dict[str, Any]:
+    """Normalize known questionnaire keys before persisting; unknown keys pass through."""
+    return {
+        key: (
+            normalize_answer_value(key, value) if key in QUESTIONNAIRE_BY_KEY else value
+        )
+        for key, value in answers.items()
+    }
+
+
 def validate_preset_answers(answers: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     for key, value in answers.items():

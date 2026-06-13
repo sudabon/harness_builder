@@ -1,0 +1,22 @@
+version: "3"
+
+tasks:
+  lint:
+    desc: Run lint with ESLint
+    cmds:
+      - pnpm run lint
+
+  lint:fix:
+    desc: Run lint with ESLint and auto-fix
+    cmds:
+      - pnpm run lint:fix
+
+  test:
+    desc: Run vitest
+    cmds:
+      - pnpm run test
+
+  build:
+    desc: Build the frontend
+    cmds:
+      - pnpm run build
