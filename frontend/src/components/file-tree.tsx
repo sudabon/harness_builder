@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import type { GeneratedFileSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,10 @@ export function FileTree({ files, selectedFileId, onSelect }: FileTreeProps) {
           onClick={() => onSelect(file.id)}
           type="button"
         >
-          <span className="font-mono text-xs">{file.file_path}</span>
+          <span className="flex items-center justify-between gap-2">
+            <span className="font-mono text-xs">{file.file_path}</span>
+            {file.is_edited ? <Badge>編集済み</Badge> : null}
+          </span>
         </button>
       ))}
     </div>

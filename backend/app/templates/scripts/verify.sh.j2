@@ -25,6 +25,8 @@ echo "Tests: {{ tests_csv }}"
 pytest
 {% elif tool|lower == "jest" %}
 pnpm exec jest
+{% elif tool|lower == "playwright" %}
+pnpm exec playwright test
 {% else %}
 echo "Skipping unsupported test tool: {{ tool }}"
 {% endif %}

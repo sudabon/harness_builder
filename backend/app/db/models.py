@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import ForeignKey, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, ForeignKey, Text, UniqueConstraint, false, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import DateTime, String
 
@@ -95,5 +95,8 @@ class GeneratedFile(TimestampMixin, Base):
     )
     file_path: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
+    is_edited: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
 
     project: Mapped[Project] = relationship(back_populates="generated_files")

@@ -5,6 +5,7 @@ import { Copy, Download, Pencil, RefreshCw } from "lucide-react";
 import { CodeViewer } from "@/components/code-viewer";
 import { FileEditor } from "@/components/file-editor";
 import { FileTree } from "@/components/file-tree";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
@@ -18,8 +19,12 @@ export function ProjectDetailPage() {
   const [activeFile, setActiveFile] = useState<GeneratedFile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const editedFiles = files.filter((file) => file.is_edited);
 
   useEffect(() => {
     if (!id) {
@@ -61,6 +66,11 @@ export function ProjectDetailPage() {
     try {
       const nextFile = await api.updateFile(id, activeFile.id, content);
       setActiveFile(nextFile);
+      setFiles((current) =>
+        current.map((file) =>
+          file.id === nextFile.id ? { ...file, is_edited: nextFile.is_edited } : file,
+        ),
+      );
       setIsEditing(false);
       setMessage("ファイルを保存しました。");
     } catch (saveError) {
@@ -82,6 +92,46 @@ export function ProjectDetailPage() {
     } catch (downloadError) {
       setError(downloadError instanceof Error ? downloadError.message : "ダウンロードに失敗しました。");
     }
+  }
+
+  async function handleRegenerate(force: boolean) {
+    if (!id) {
+      return;
+    }
+
+    setShowRegenerateConfirm(false);
+    setIsRegenerating(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const result = await api.generateFiles(id, force);
+      setFiles(result.items);
+      const currentId = activeFile?.id ?? null;
+      const nextSummary =
+        result.items.find((item) => item.id === currentId) ?? result.items[0] ?? null;
+      if (nextSummary) {
+        const nextFile = await api.getFile(id, nextSummary.id);
+        setActiveFile(nextFile);
+      } else {
+        setActiveFile(null);
+      }
+      setIsEditing(false);
+      setMessage(force ? "編集済みファイルを含めて再生成しました。" : "再生成しました。");
+    } catch (regenerateError) {
+      setError(
+        regenerateError instanceof Error ? regenerateError.message : "再生成に失敗しました。",
+      );
+    } finally {
+      setIsRegenerating(false);
+    }
+  }
+
+  function handleRegenerateClick() {
+    if (editedFiles.length > 0) {
+      setShowRegenerateConfirm(true);
+      return;
+    }
+    void handleRegenerate(false);
   }
 
   async function handleCopy() {
@@ -109,12 +159,35 @@ export function ProjectDetailPage() {
                 ZIP
               </Button>
               {id ? (
-                <Button onClick={() => void api.generateFiles(id).then(() => window.location.reload())} type="button" variant="outline">
+                <Button disabled={isRegenerating} onClick={handleRegenerateClick} type="button" variant="outline">
                   <RefreshCw className="h-4 w-4" />
-                  再生成
+                  {isRegenerating ? "再生成中..." : "再生成"}
                 </Button>
               ) : null}
             </div>
+            {showRegenerateConfirm ? (
+              <div className="space-y-3 rounded-2xl border border-border bg-muted/60 p-4">
+                <p className="text-sm font-medium">編集済みファイルがあります</p>
+                <p className="text-xs text-muted-foreground">
+                  編集済み: {editedFiles.map((file) => file.file_path).join(", ")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  編集内容を保護したまま再生成するか、テンプレート出力で上書きするかを選択してください。
+                  選択から外れたツールのファイルは、編集済みでも削除されます。
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => void handleRegenerate(false)} type="button" variant="secondary">
+                    保護のまま再生成
+                  </Button>
+                  <Button onClick={() => void handleRegenerate(true)} type="button" variant="outline">
+                    上書きして再生成
+                  </Button>
+                  <Button onClick={() => setShowRegenerateConfirm(false)} type="button" variant="outline">
+                    キャンセル
+                  </Button>
+                </div>
+              </div>
+            ) : null}
             <FileTree
               files={files}
               onSelect={(fileId) => void selectFile(fileId)}
@@ -127,7 +200,10 @@ export function ProjectDetailPage() {
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <CardTitle>{activeFile?.file_path ?? "ファイルを選択してください"}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {activeFile?.file_path ?? "ファイルを選択してください"}
+                  {activeFile?.is_edited ? <Badge>編集済み</Badge> : null}
+                </CardTitle>
                 <CardDescription>
                   Syntax highlight 付きのプレビューと簡易エディタを提供します。
                 </CardDescription>

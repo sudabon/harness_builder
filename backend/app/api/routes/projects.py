@@ -6,11 +6,15 @@ from fastapi import APIRouter, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
 
 from app.api.deps import CurrentUser, DbSession, OwnedProject
-from app.core.questionnaire import missing_required_answer_keys
+from app.core.questionnaire import (
+    missing_required_answer_keys,
+    validate_answers_payload,
+)
 from app.db.models import Project
 from app.schemas.project import (
     AnswersUpdateRequest,
     FileUpdateRequest,
+    GenerateFilesRequest,
     GeneratedFileResponse,
     GeneratedFilesListResponse,
     GeneratedFileSummaryResponse,
@@ -57,6 +61,13 @@ def update_answers(
     project: OwnedProject,
     db: DbSession,
 ) -> ProjectResponse:
+    errors = validate_answers_payload(payload.answers)
+    if errors:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid answers: {'; '.join(errors)}",
+        )
+
     upsert_project_answers(db, project, payload.answers)
     db.commit()
     db.refresh(project)
@@ -64,7 +75,11 @@ def update_answers(
 
 
 @router.post("/{project_id}/generate", response_model=GeneratedFilesListResponse)
-def generate_files(project: OwnedProject, db: DbSession) -> GeneratedFilesListResponse:
+def generate_files(
+    project: OwnedProject,
+    db: DbSession,
+    payload: GenerateFilesRequest | None = None,
+) -> GeneratedFilesListResponse:
     answers = get_project_answers(db, project)
     missing = missing_required_answer_keys(answers)
     if missing:
@@ -73,7 +88,8 @@ def generate_files(project: OwnedProject, db: DbSession) -> GeneratedFilesListRe
             detail=f"Missing required answers: {', '.join(missing)}",
         )
 
-    generated = generate_project_files(db, project)
+    force = payload.force if payload is not None else False
+    generated = generate_project_files(db, project, force=force)
     db.commit()
     return GeneratedFilesListResponse(
         items=[GeneratedFileSummaryResponse.model_validate(item) for item in generated]
@@ -112,6 +128,7 @@ def update_file(
         )
 
     file.content = payload.content
+    file.is_edited = True
     db.commit()
     db.refresh(file)
     return GeneratedFileResponse.model_validate(file)

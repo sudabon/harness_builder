@@ -9,6 +9,7 @@ from app.core.questionnaire import (
     REQUIRED_ANSWER_KEYS,
     missing_required_answer_keys,
     normalize_questionnaire_answers,
+    validate_answers_payload,
     validate_preset_answers,
 )
 
@@ -90,6 +91,32 @@ def test_questionnaire_normalization_preserves_unknown_answers():
 def test_presets_match_questionnaire_schema():
     for preset in PRESETS:
         assert validate_preset_answers(preset["answers"]) == []
+
+
+def test_validate_answers_payload_accepts_valid_answers():
+    assert validate_answers_payload(_fully_answered_required_fields()) == []
+
+
+def test_validate_answers_payload_rejects_invalid_choice():
+    errors = validate_answers_payload({"ai_tools": ["claude"]})
+    assert errors == ["ai_tools has invalid choices: claude"]
+
+
+def test_validate_answers_payload_rejects_type_mismatch():
+    assert validate_answers_payload({"ai_tools": "Claude"}) == [
+        "ai_tools must be a list"
+    ]
+    assert validate_answers_payload({"project_kind": ["Web"]}) == [
+        "project_kind must be a string"
+    ]
+
+
+def test_validate_answers_payload_passes_unknown_keys_through():
+    assert validate_answers_payload({"future_key": {"custom": True}}) == []
+    errors = validate_answers_payload(
+        {"future_key": "anything", "review_policy": "ゆるい"}
+    )
+    assert errors == ["review_policy has invalid choice: ゆるい"]
 
 
 def test_frontend_schema_matches_backend_keys_required_flags_and_options():

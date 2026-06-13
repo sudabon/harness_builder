@@ -94,6 +94,7 @@ def test_alembic_upgrade_head_creates_expected_schema(tmp_path, monkeypatch):
             "project_id",
             "file_path",
             "content",
+            "is_edited",
             "created_at",
             "updated_at",
         }
@@ -122,5 +123,27 @@ def test_alembic_upgrade_head_creates_expected_schema(tmp_path, monkeypatch):
         assert "ix_generated_files_project_id" in _index_names(
             inspector, "generated_files"
         )
+    finally:
+        get_settings.cache_clear()
+
+
+def test_alembic_downgrade_removes_is_edited_column(tmp_path, monkeypatch):
+    database_url = f"sqlite:///{tmp_path / 'migration-downgrade-test.db'}"
+    monkeypatch.setenv("DATABASE_URL", database_url)
+    get_settings.cache_clear()
+
+    try:
+        config = _alembic_config(database_url)
+        command.upgrade(config, "head")
+        command.downgrade(config, "20260418_0001")
+
+        engine = create_engine(database_url, future=True)
+        inspector = inspect(engine)
+
+        assert "is_edited" not in _column_names(inspector, "generated_files")
+
+        command.upgrade(config, "head")
+        inspector = inspect(create_engine(database_url, future=True))
+        assert "is_edited" in _column_names(inspector, "generated_files")
     finally:
         get_settings.cache_clear()

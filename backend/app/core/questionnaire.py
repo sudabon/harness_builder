@@ -212,6 +212,16 @@ def validate_known_answer_value(key: str, value: Any) -> list[str]:
     return errors
 
 
+def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
+    """Validate only known questionnaire keys; unknown keys pass through."""
+    errors: list[str] = []
+    for key, value in answers.items():
+        if key not in QUESTIONNAIRE_BY_KEY:
+            continue
+        errors.extend(validate_known_answer_value(key, value))
+    return errors
+
+
 def validate_preset_answers(answers: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     for key, value in answers.items():
