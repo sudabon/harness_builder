@@ -100,15 +100,16 @@ def test_validate_answers_payload_accepts_valid_answers():
 def test_validate_answers_payload_rejects_invalid_choice():
     errors = validate_answers_payload({"ai_tools": ["claude"]})
     assert errors == ["ai_tools has invalid choices: claude"]
+    assert validate_answers_payload({"ai_tools": "claude"}) == [
+        "ai_tools has invalid choices: claude"
+    ]
 
 
-def test_validate_answers_payload_rejects_type_mismatch():
-    assert validate_answers_payload({"ai_tools": "Claude"}) == [
-        "ai_tools must be a list"
-    ]
-    assert validate_answers_payload({"project_kind": ["Web"]}) == [
-        "project_kind must be a string"
-    ]
+def test_validate_answers_payload_accepts_normalizable_shapes():
+    assert validate_answers_payload({"ai_tools": "Claude"}) == []
+    assert validate_answers_payload({"project_kind": ["Web"]}) == []
+    assert validate_answers_payload({"prohibited_actions": ["rm -rf 禁止"]}) == []
+    assert validate_answers_payload({"review_policy": ""}) == []
 
 
 def test_validate_answers_payload_passes_unknown_keys_through():

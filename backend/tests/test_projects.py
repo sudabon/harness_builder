@@ -70,18 +70,28 @@ def test_update_answers_rejects_invalid_choice(client):
     }
 
 
-def test_update_answers_rejects_type_mismatch(client):
+def test_update_answers_accepts_normalizable_payload_shapes(client):
     project_id = _create_project(client)
 
     response = client.put(
         f"/api/v1/projects/{project_id}/answers",
-        json={"answers": {"languages": "Python", "project_kind": ["Web"]}},
+        json={
+            "answers": {
+                "project_kind": ["Web"],
+                "languages": "Python",
+                "frameworks": "FastAPI",
+                "ai_tools": "Codex",
+                "test_strategy": "pytest",
+                "lint_format": "ruff",
+                "prohibited_actions": ["本番DBの直接変更禁止"],
+                "review_policy": ["厳格"],
+            }
+        },
     )
 
-    assert response.status_code == 400
-    detail = response.json()["detail"]
-    assert "languages must be a list" in detail
-    assert "project_kind must be a string" in detail
+    assert response.status_code == 200
+    generated = client.post(f"/api/v1/projects/{project_id}/generate")
+    assert generated.status_code == 200
 
 
 def test_update_answers_accepts_valid_answers(client):

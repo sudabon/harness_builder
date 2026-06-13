@@ -196,24 +196,22 @@ def validate_known_answer_value(key: str, value: Any) -> list[str]:
         return [f"Unknown answer key: {key}"]
 
     errors: list[str] = []
+    normalized_value = normalize_answer_value(key, value)
     if field.input_type == "multi_choice":
-        if not isinstance(value, list):
-            return [f"{key} must be a list"]
-        values = [str(item) for item in value]
+        values = answer_value_as_list(normalized_value)
         invalid = [item for item in values if item not in field.options]
         if invalid:
             errors.append(f"{key} has invalid choices: {', '.join(invalid)}")
         return errors
 
-    if not isinstance(value, str):
-        return [f"{key} must be a string"]
-    if field.options and value not in field.options:
-        errors.append(f"{key} has invalid choice: {value}")
+    value_as_string = answer_value_as_string(normalized_value)
+    if field.options and value_as_string and value_as_string not in field.options:
+        errors.append(f"{key} has invalid choice: {value_as_string}")
     return errors
 
 
 def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
-    """Validate only known questionnaire keys; unknown keys pass through."""
+    """Validate known questionnaire keys after normalization; unknown keys pass through."""
     errors: list[str] = []
     for key, value in answers.items():
         if key not in QUESTIONNAIRE_BY_KEY:
