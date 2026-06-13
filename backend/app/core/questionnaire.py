@@ -211,7 +211,11 @@ def validate_known_answer_value(key: str, value: Any) -> list[str]:
 
 
 def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
-    """Validate known questionnaire keys after normalization; unknown keys pass through."""
+    """Validate values for known questionnaire keys (normalization handled per-value).
+
+    Unknown keys are intentionally passed through without validation to allow the
+    schema to evolve (forward-compat); their values are stored verbatim.
+    """
     errors: list[str] = []
     for key, value in answers.items():
         if key not in QUESTIONNAIRE_BY_KEY:
@@ -221,7 +225,10 @@ def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
 
 
 def normalize_answers_payload_for_storage(answers: dict[str, Any]) -> dict[str, Any]:
-    """Normalize known questionnaire keys before persisting; unknown keys pass through."""
+    """Normalize known questionnaire keys before persisting; unknown keys pass through.
+
+    Unknown keys are kept as-is for forward-compat (see ``validate_answers_payload``).
+    """
     return {
         key: (
             normalize_answer_value(key, value) if key in QUESTIONNAIRE_BY_KEY else value
