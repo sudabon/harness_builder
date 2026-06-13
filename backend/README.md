@@ -11,8 +11,22 @@ uv run uvicorn app.main:app --reload --port 8000
 
 ## Database
 
-The backend uses PostgreSQL in `docker-compose.yml`. Tests override the database
-dependency with SQLite so they can run locally without a container.
+The backend uses PostgreSQL in `docker-compose.yml`. API tests override the database
+dependency with in-memory SQLite, but app startup still opens `DATABASE_URL` to
+initialize schema metadata.
+
+`task test` sets `DATABASE_URL` to the local `laborman` database by default.
+`tests/conftest.py` applies the same default when the variable is unset.
+
+```bash
+task test
+```
+
+To use a different database for tests:
+
+```bash
+DATABASE_URL=postgresql+psycopg2://user:pass@localhost:5432/dbname task test
+```
 
 Alembic is the canonical schema history. When changing SQLAlchemy models, update
 the matching Alembic revision in the same change and verify the migration path.

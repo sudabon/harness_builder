@@ -117,10 +117,10 @@ cd frontend && pnpm test:e2e
 | GET | `/presets` | プリセット一覧 |
 | POST | `/projects` | プロジェクト作成 |
 | GET | `/projects/{id}` | プロジェクト取得 |
-| PUT | `/projects/{id}/answers` | アンケート回答の更新 |
-| POST | `/projects/{id}/generate` | ファイル生成（必須回答が欠けると 400） |
-| GET | `/projects/{id}/files` | 生成ファイル一覧 |
-| GET/PUT | `/projects/{id}/files/{file_id}` | 生成ファイルの取得・更新 |
+| PUT | `/projects/{id}/answers` | アンケート回答の更新（既知キーは型・選択肢を検証し正規化して保存。不正時 400） |
+| POST | `/projects/{id}/generate` | ファイル生成（ボディ `{"force": bool}` 省略時 `false`。必須回答が欠けると 400） |
+| GET | `/projects/{id}/files` | 生成ファイル一覧（各項目に `is_edited` を含む） |
+| GET/PUT | `/projects/{id}/files/{file_id}` | 生成ファイルの取得・更新（内容変更時のみ `is_edited: true`） |
 | GET | `/projects/{id}/export` | ZIP ダウンロード |
 
 ## フロントエンドのルーティング

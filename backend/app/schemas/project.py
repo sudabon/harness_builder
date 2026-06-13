@@ -17,6 +17,7 @@ class GeneratedFileResponse(BaseModel):
     id: str
     file_path: str
     content: str
+    is_edited: bool
     created_at: datetime
     updated_at: datetime
 
@@ -26,6 +27,7 @@ class GeneratedFileResponse(BaseModel):
 class GeneratedFileSummaryResponse(BaseModel):
     id: str
     file_path: str
+    is_edited: bool
     created_at: datetime
     updated_at: datetime
 
@@ -38,6 +40,10 @@ class GeneratedFilesListResponse(BaseModel):
 
 class FileUpdateRequest(BaseModel):
     content: str
+
+
+class GenerateFilesRequest(BaseModel):
+    force: bool = False
 
 
 class ProjectResponse(BaseModel):

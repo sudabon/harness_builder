@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,8 @@ from app.core.questionnaire import (
 )
 from app.db.models import GeneratedFile, Project
 from app.services.answers import get_project_answers
+
+logger = logging.getLogger(__name__)
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -137,10 +140,13 @@ def _upsert_generated_file(
     project: Project,
     rendered: RenderedTemplate,
     existing: dict[str, GeneratedFile],
+    force: bool,
 ) -> GeneratedFile:
     current = existing.get(rendered.output_path)
     if current:
-        current.content = rendered.content
+        if not current.is_edited or force:
+            current.content = rendered.content
+            current.is_edited = False
         return current
 
     item = GeneratedFile(
@@ -152,7 +158,26 @@ def _upsert_generated_file(
     return item
 
 
-def generate_project_files(session: Session, project: Project) -> list[GeneratedFile]:
+def _delete_orphan_generated_files(
+    session: Session,
+    existing: dict[str, GeneratedFile],
+    selected_paths: set[str],
+) -> None:
+    for file_path, item in list(existing.items()):
+        if file_path not in selected_paths:
+            logger.info(
+                "Deleting orphan generated file: project_id=%s path=%s is_edited=%s",
+                item.project_id,
+                file_path,
+                item.is_edited,
+            )
+            session.delete(item)
+            del existing[file_path]
+
+
+def generate_project_files(
+    session: Session, project: Project, *, force: bool = False
+) -> list[GeneratedFile]:
     answers = get_project_answers(session, project)
     context = build_template_context(project, answers)
     environment = _environment()
@@ -160,12 +185,15 @@ def generate_project_files(session: Session, project: Project) -> list[Generated
     selected_tools = set(answer_value_as_list(normalized_answers.get("ai_tools")))
     definitions = _select_template_definitions(selected_tools)
     existing = _load_existing_generated_files(session, project)
+    _delete_orphan_generated_files(
+        session, existing, {definition.output_path for definition in definitions}
+    )
     generated_items: list[GeneratedFile] = []
 
     for definition in definitions:
         rendered = _render_template(environment, definition, context)
         generated_items.append(
-            _upsert_generated_file(session, project, rendered, existing)
+            _upsert_generated_file(session, project, rendered, existing, force)
         )
 
     session.flush()

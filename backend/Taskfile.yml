@@ -18,6 +18,8 @@ tasks:
 
   test:
     desc: Run pytest
+    env:
+      DATABASE_URL: postgresql+psycopg2://laborman:laborman@localhost:5432/laborman
     cmds:
       - uv run pytest .
 

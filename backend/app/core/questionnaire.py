@@ -196,20 +196,45 @@ def validate_known_answer_value(key: str, value: Any) -> list[str]:
         return [f"Unknown answer key: {key}"]
 
     errors: list[str] = []
+    normalized_value = normalize_answer_value(key, value)
     if field.input_type == "multi_choice":
-        if not isinstance(value, list):
-            return [f"{key} must be a list"]
-        values = [str(item) for item in value]
+        values = answer_value_as_list(normalized_value)
         invalid = [item for item in values if item not in field.options]
         if invalid:
             errors.append(f"{key} has invalid choices: {', '.join(invalid)}")
         return errors
 
-    if not isinstance(value, str):
-        return [f"{key} must be a string"]
-    if field.options and value not in field.options:
-        errors.append(f"{key} has invalid choice: {value}")
+    value_as_string = answer_value_as_string(normalized_value)
+    if field.options and value_as_string and value_as_string not in field.options:
+        errors.append(f"{key} has invalid choice: {value_as_string}")
     return errors
+
+
+def validate_answers_payload(answers: dict[str, Any]) -> list[str]:
+    """Validate values for known questionnaire keys (normalization handled per-value).
+
+    Unknown keys are intentionally passed through without validation to allow the
+    schema to evolve (forward-compat); their values are stored verbatim.
+    """
+    errors: list[str] = []
+    for key, value in answers.items():
+        if key not in QUESTIONNAIRE_BY_KEY:
+            continue
+        errors.extend(validate_known_answer_value(key, value))
+    return errors
+
+
+def normalize_answers_payload_for_storage(answers: dict[str, Any]) -> dict[str, Any]:
+    """Normalize known questionnaire keys before persisting; unknown keys pass through.
+
+    Unknown keys are kept as-is for forward-compat (see ``validate_answers_payload``).
+    """
+    return {
+        key: (
+            normalize_answer_value(key, value) if key in QUESTIONNAIRE_BY_KEY else value
+        )
+        for key, value in answers.items()
+    }
 
 
 def validate_preset_answers(answers: dict[str, Any]) -> list[str]:

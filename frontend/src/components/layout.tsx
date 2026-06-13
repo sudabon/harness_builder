@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ArrowRight, LogOut, Sparkles } from "lucide-react";
 
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/use-auth";
 import { Button } from "@/components/ui/button";
 
 export function Layout() {

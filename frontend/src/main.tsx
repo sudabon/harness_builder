@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { Layout } from "@/components/layout";
 import { ProtectedRoute } from "@/components/protected-route";
-import { AuthProvider } from "@/contexts/auth-context";
+import { AuthProvider } from "@/contexts/auth-provider";
 import { AppHomePage } from "@/pages/home-page";
 import { AuthPage } from "@/pages/auth-page";
 import { ProjectDetailPage } from "@/pages/project-detail-page";

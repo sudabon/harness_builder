@@ -26,6 +26,7 @@ export interface Project {
 export interface GeneratedFileSummary {
   id: string;
   file_path: string;
+  is_edited: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -8,7 +8,9 @@ from app.core.questionnaire import (
     QUESTIONNAIRE_FIELDS,
     REQUIRED_ANSWER_KEYS,
     missing_required_answer_keys,
+    normalize_answers_payload_for_storage,
     normalize_questionnaire_answers,
+    validate_answers_payload,
     validate_preset_answers,
 )
 
@@ -90,6 +92,53 @@ def test_questionnaire_normalization_preserves_unknown_answers():
 def test_presets_match_questionnaire_schema():
     for preset in PRESETS:
         assert validate_preset_answers(preset["answers"]) == []
+
+
+def test_validate_answers_payload_accepts_valid_answers():
+    assert validate_answers_payload(_fully_answered_required_fields()) == []
+
+
+def test_validate_answers_payload_rejects_invalid_choice():
+    errors = validate_answers_payload({"ai_tools": ["claude"]})
+    assert errors == ["ai_tools has invalid choices: claude"]
+    assert validate_answers_payload({"ai_tools": "claude"}) == [
+        "ai_tools has invalid choices: claude"
+    ]
+
+
+def test_validate_answers_payload_accepts_normalizable_shapes():
+    assert validate_answers_payload({"ai_tools": "Claude"}) == []
+    assert validate_answers_payload({"project_kind": ["Web"]}) == []
+    assert validate_answers_payload({"prohibited_actions": ["rm -rf 禁止"]}) == []
+    assert validate_answers_payload({"review_policy": ""}) == []
+
+
+def test_normalize_answers_payload_for_storage_persists_canonical_shapes():
+    normalized = normalize_answers_payload_for_storage(
+        {
+            "project_kind": ["Web"],
+            "languages": "Python",
+            "ai_tools": "Codex",
+            "prohibited_actions": ["rm -rf 禁止"],
+            "future_key": {"custom": True},
+        }
+    )
+
+    assert normalized == {
+        "project_kind": "Web",
+        "languages": ["Python"],
+        "ai_tools": ["Codex"],
+        "prohibited_actions": "rm -rf 禁止",
+        "future_key": {"custom": True},
+    }
+
+
+def test_validate_answers_payload_passes_unknown_keys_through():
+    assert validate_answers_payload({"future_key": {"custom": True}}) == []
+    errors = validate_answers_payload(
+        {"future_key": "anything", "review_policy": "ゆるい"}
+    )
+    assert errors == ["review_policy has invalid choice: ゆるい"]
 
 
 def test_frontend_schema_matches_backend_keys_required_flags_and_options():

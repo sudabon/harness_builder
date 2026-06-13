@@ -78,8 +78,11 @@ export const api = {
       body: JSON.stringify({ answers }),
     });
   },
-  async generateFiles(id: string) {
-    return request<GeneratedFilesList>(`/projects/${id}/generate`, { method: "POST" });
+  async generateFiles(id: string, force = false) {
+    return request<GeneratedFilesList>(`/projects/${id}/generate`, {
+      method: "POST",
+      body: JSON.stringify({ force }),
+    });
   },
   async listFiles(id: string) {
     return request<GeneratedFilesList>(`/projects/${id}/files`);
