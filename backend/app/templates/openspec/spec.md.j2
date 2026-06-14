@@ -1,0 +1,12 @@
+# Delta: ai-coding-harness
+
+## ADDED Requirements
+
+### Requirement: AI coding harness is available
+
+The repository MUST provide an AI coding harness adapted to its project type, languages, frameworks, selected AI tools, and team operating constraints.
+
+#### Scenario: Harness files are created from refined drafts
+- **WHEN** `/opsx:apply {{ change_name }}` is run against this change
+- **THEN** the resulting harness files are created from the reference drafts in `tasks.md`
+- **AND** the drafts are refined to match the repository's actual structure, dependencies, commands, and conventions before being written

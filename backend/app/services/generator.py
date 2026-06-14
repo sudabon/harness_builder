@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,6 +21,8 @@ from app.services.answers import get_project_answers
 logger = logging.getLogger(__name__)
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+CHANGE_NAME = "setup-ai-harness"
+CHANGE_ROOT = f"openspec/changes/{CHANGE_NAME}"
 
 
 @dataclass(frozen=True)
@@ -32,6 +36,14 @@ class TemplateDefinition:
 class RenderedTemplate:
     output_path: str
     content: str
+
+    @property
+    def markdown_fence(self) -> str:
+        longest_backtick_run = max(
+            (len(match.group(0)) for match in re.finditer(r"`+", self.content)),
+            default=0,
+        )
+        return "`" * max(4, longest_backtick_run + 1)
 
 
 TEMPLATE_DEFINITIONS = [
@@ -53,11 +65,21 @@ TEMPLATE_DEFINITIONS = [
     TemplateDefinition("scripts/verify.sh.j2", "scripts/verify.sh"),
 ]
 
+CHANGE_TEMPLATE_DEFINITIONS = [
+    TemplateDefinition("openspec/proposal.md.j2", f"{CHANGE_ROOT}/proposal.md"),
+    TemplateDefinition("openspec/tasks.md.j2", f"{CHANGE_ROOT}/tasks.md"),
+    TemplateDefinition("openspec/openspec.yaml.j2", f"{CHANGE_ROOT}/.openspec.yaml"),
+    TemplateDefinition(
+        "openspec/spec.md.j2", f"{CHANGE_ROOT}/specs/ai-coding-harness/spec.md"
+    ),
+]
+
 
 def _environment() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=select_autoescape(enabled_extensions=("html", "xml")),
+        undefined=StrictUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
     )
@@ -124,6 +146,19 @@ def _render_template(
     return RenderedTemplate(output_path=definition.output_path, content=content)
 
 
+def _render_all_drafts(
+    project: Project, answers: dict[str, Any]
+) -> list[RenderedTemplate]:
+    context = build_template_context(project, answers)
+    environment = _environment()
+    normalized_answers = normalize_questionnaire_answers(answers)
+    selected_tools = set(answer_value_as_list(normalized_answers.get("ai_tools")))
+    definitions = _select_template_definitions(selected_tools)
+    return [
+        _render_template(environment, definition, context) for definition in definitions
+    ]
+
+
 def _load_existing_generated_files(
     session: Session, project: Project
 ) -> dict[str, GeneratedFile]:
@@ -162,9 +197,20 @@ def _delete_orphan_generated_files(
     session: Session,
     existing: dict[str, GeneratedFile],
     selected_paths: set[str],
-) -> None:
+    *,
+    force: bool,
+) -> list[GeneratedFile]:
+    preserved: list[GeneratedFile] = []
     for file_path, item in list(existing.items()):
         if file_path not in selected_paths:
+            if item.is_edited and not force:
+                logger.info(
+                    "Preserving edited orphan generated file: project_id=%s path=%s",
+                    item.project_id,
+                    file_path,
+                )
+                preserved.append(item)
+                continue
             logger.info(
                 "Deleting orphan generated file: project_id=%s path=%s is_edited=%s",
                 item.project_id,
@@ -173,25 +219,34 @@ def _delete_orphan_generated_files(
             )
             session.delete(item)
             del existing[file_path]
+    return preserved
 
 
-def generate_project_files(
+def generate_project_change(
     session: Session, project: Project, *, force: bool = False
 ) -> list[GeneratedFile]:
     answers = get_project_answers(session, project)
-    context = build_template_context(project, answers)
+    rendered_drafts = _render_all_drafts(project, answers)
+    context = build_template_context(project, answers) | {
+        "change_name": CHANGE_NAME,
+        "created": date.today().isoformat(),
+        "rendered_files": rendered_drafts,
+    }
     environment = _environment()
-    normalized_answers = normalize_questionnaire_answers(answers)
-    selected_tools = set(answer_value_as_list(normalized_answers.get("ai_tools")))
-    definitions = _select_template_definitions(selected_tools)
-    existing = _load_existing_generated_files(session, project)
-    _delete_orphan_generated_files(
-        session, existing, {definition.output_path for definition in definitions}
-    )
-    generated_items: list[GeneratedFile] = []
+    rendered_change_files = [
+        _render_template(environment, definition, context)
+        for definition in CHANGE_TEMPLATE_DEFINITIONS
+    ]
 
-    for definition in definitions:
-        rendered = _render_template(environment, definition, context)
+    existing = _load_existing_generated_files(session, project)
+    generated_items = _delete_orphan_generated_files(
+        session,
+        existing,
+        {rendered.output_path for rendered in rendered_change_files},
+        force=force,
+    )
+
+    for rendered in rendered_change_files:
         generated_items.append(
             _upsert_generated_file(session, project, rendered, existing, force)
         )

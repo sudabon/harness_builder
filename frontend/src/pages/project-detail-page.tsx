@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Copy, Download, Pencil, RefreshCw } from "lucide-react";
+import { Copy, Download, FolderOpen, Pencil, RefreshCw, Terminal } from "lucide-react";
 
 import { CodeViewer } from "@/components/code-viewer";
 import { FileEditor } from "@/components/file-editor";
@@ -145,56 +145,79 @@ export function ProjectDetailPage() {
   return (
     <div className="shell space-y-6">
       <section className="grid gap-6 xl:grid-cols-[320px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>{project?.name ?? "プロジェクトを読み込み中..."}</CardTitle>
-            <CardDescription>
-              生成ファイルのプレビュー、編集、コピー、ZIP ダウンロードを行います。
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Button onClick={() => void handleDownload()} type="button" variant="primary">
-                <Download className="h-4 w-4" />
-                ZIP
-              </Button>
-              {id ? (
-                <Button disabled={isRegenerating} onClick={handleRegenerateClick} type="button" variant="outline">
-                  <RefreshCw className="h-4 w-4" />
-                  {isRegenerating ? "再生成中..." : "再生成"}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{project?.name ?? "プロジェクトを読み込み中..."}</CardTitle>
+              <CardDescription>
+                OpenSpec change パッケージのプレビュー、編集、コピー、ZIP ダウンロードを行います。
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Button onClick={() => void handleDownload()} type="button" variant="primary">
+                  <Download className="h-4 w-4" />
+                  ZIP
                 </Button>
-              ) : null}
-            </div>
-            {showRegenerateConfirm ? (
-              <div className="space-y-3 rounded-2xl border border-border bg-muted/60 p-4">
-                <p className="text-sm font-medium">編集済みファイルがあります</p>
-                <p className="text-xs text-muted-foreground">
-                  編集済み: {editedFiles.map((file) => file.file_path).join(", ")}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  編集内容を保護したまま再生成するか、テンプレート出力で上書きするかを選択してください。
-                  選択から外れたツールのファイルは、編集済みでも削除されます。
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => void handleRegenerate(false)} type="button" variant="secondary">
-                    保護のまま再生成
+                {id ? (
+                  <Button disabled={isRegenerating} onClick={handleRegenerateClick} type="button" variant="outline">
+                    <RefreshCw className="h-4 w-4" />
+                    {isRegenerating ? "再生成中..." : "再生成"}
                   </Button>
-                  <Button onClick={() => void handleRegenerate(true)} type="button" variant="outline">
-                    上書きして再生成
-                  </Button>
-                  <Button onClick={() => setShowRegenerateConfirm(false)} type="button" variant="outline">
-                    キャンセル
-                  </Button>
-                </div>
+                ) : null}
               </div>
-            ) : null}
-            <FileTree
-              files={files}
-              onSelect={(fileId) => void selectFile(fileId)}
-              selectedFileId={activeFile?.id ?? null}
-            />
-          </CardContent>
-        </Card>
+              {showRegenerateConfirm ? (
+                <div className="space-y-3 rounded-2xl border border-border bg-muted/60 p-4">
+                  <p className="text-sm font-medium">編集済みファイルがあります</p>
+                  <p className="text-xs text-muted-foreground">
+                    編集済み: {editedFiles.map((file) => file.file_path).join(", ")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    編集内容を保護したまま再生成するか、テンプレート出力で上書きするかを選択してください。
+                    通常再生成では編集済みファイルを保持し、上書き再生成ではテンプレート出力で置き換えます。
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => void handleRegenerate(false)} type="button" variant="secondary">
+                      保護のまま再生成
+                    </Button>
+                    <Button onClick={() => void handleRegenerate(true)} type="button" variant="outline">
+                      上書きして再生成
+                    </Button>
+                    <Button onClick={() => setShowRegenerateConfirm(false)} type="button" variant="outline">
+                      キャンセル
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              <FileTree
+                files={files}
+                onSelect={(fileId) => void selectFile(fileId)}
+                selectedFileId={activeFile?.id ?? null}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>使い方</CardTitle>
+              <CardDescription>
+                ZIP を OpenSpec 初期化済みの対象リポジトリへ展開して適用します。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3">
+                  <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                  <span>ZIP を対象リポジトリのルートに展開し、`openspec/changes/` を配置します。</span>
+                </li>
+                <li className="flex gap-3">
+                  <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                  <span>`/opsx:apply setup-ai-harness` を実行します。</span>
+                </li>
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
@@ -238,7 +261,7 @@ export function ProjectDetailPage() {
                 <CodeViewer content={activeFile.content} />
               )
             ) : (
-              <p className="text-sm text-muted-foreground">生成ファイルがまだありません。</p>
+              <p className="text-sm text-muted-foreground">生成された change ファイルがまだありません。</p>
             )}
           </CardContent>
         </Card>

@@ -1,3 +1,16 @@
+import io
+from zipfile import ZipFile
+
+
+CHANGE_ROOT = "openspec/changes/setup-ai-harness"
+CHANGE_PACKAGE_PATHS = {
+    f"{CHANGE_ROOT}/proposal.md",
+    f"{CHANGE_ROOT}/tasks.md",
+    f"{CHANGE_ROOT}/.openspec.yaml",
+    f"{CHANGE_ROOT}/specs/ai-coding-harness/spec.md",
+}
+
+
 def _register(client):
     client.post(
         "/api/v1/auth/register",
@@ -102,6 +115,13 @@ def test_update_answers_accepts_normalizable_payload_shapes(client):
 
     generated = client.post(f"/api/v1/projects/{project_id}/generate")
     assert generated.status_code == 200
+    generated_paths = {item["file_path"] for item in generated.json()["items"]}
+    assert generated_paths == CHANGE_PACKAGE_PATHS
+
+    exported = client.get(f"/api/v1/projects/{project_id}/export")
+    assert exported.status_code == 200
+    with ZipFile(io.BytesIO(exported.content)) as archive:
+        assert set(archive.namelist()) == CHANGE_PACKAGE_PATHS
 
 
 def test_update_answers_accepts_valid_answers(client):

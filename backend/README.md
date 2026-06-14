@@ -2,6 +2,17 @@
 
 FastAPI backend for the Harness Builder MVP.
 
+`POST /api/v1/projects/{id}/generate` stores an OpenSpec change package in
+`generated_files` instead of flat harness files. The package paths are rooted at
+`openspec/changes/setup-ai-harness/` and include `proposal.md`, `tasks.md`,
+`.openspec.yaml`, and `specs/ai-coding-harness/spec.md`. The original harness
+templates are rendered as reference drafts inside `tasks.md`.
+
+`GET /api/v1/projects/{id}/export` zips the saved `file_path` values as-is, so
+extracting the ZIP at a target repository root places the change under
+`openspec/changes/`. Run `/opsx:apply setup-ai-harness` in that repository to
+create the final harness files.
+
 ## Development
 
 ```bash

@@ -41,13 +41,15 @@ export function ConfirmationStep({
         <CardHeader>
           <CardTitle>生成される内容</CardTitle>
           <CardDescription>
-            エージェントルール、ツール設定、プロンプト、品質管理、verify スクリプトを作成します。
+            エージェントルール、ツール設定、プロンプト、品質管理、verify スクリプトの下書きを含む
+            OpenSpec change パッケージを作成します。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>1. 回答を保存</p>
-          <p>2. Jinja2 テンプレートからファイルを生成</p>
+          <p>2. Jinja2 テンプレートから `setup-ai-harness` change を生成</p>
           <p>3. プレビュー画面へ遷移し、編集・ZIP ダウンロードを提供</p>
+          <p>4. 対象リポジトリのルートに展開し、`/opsx:apply setup-ai-harness` を実行</p>
         </CardContent>
       </Card>
     </div>

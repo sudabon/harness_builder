@@ -1,0 +1,17 @@
+# Tasks: {{ change_name }}
+
+## 1. Harness drafts
+
+{% for file in rendered_files %}
+- [ ] {{ loop.index }}. Create or update `{{ file.output_path }}`. Use the draft below as a starting point, then refine and complete it for the target repository's real directory structure, dependencies, existing conventions, and commands. Do not copy the draft verbatim.
+
+{{ file.markdown_fence }}text
+{{ file.content | trim }}
+{{ file.markdown_fence }}
+
+{% endfor %}
+## 2. Verification
+
+- [ ] {{ rendered_files|length + 1 }}. Run `openspec validate {{ change_name }}` in the target repository and resolve any OpenSpec issues.
+- [ ] {{ rendered_files|length + 2 }}. Run the target repository's lint and formatting checks: {{ lint_csv }}.
+- [ ] {{ rendered_files|length + 3 }}. Run the target repository's tests: {{ tests_csv }}.

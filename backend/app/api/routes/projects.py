@@ -24,7 +24,7 @@ from app.schemas.project import (
 )
 from app.services.answers import get_project_answers, upsert_project_answers
 from app.services.export import build_project_zip
-from app.services.generator import generate_project_files
+from app.services.generator import generate_project_change
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -92,7 +92,7 @@ def generate_files(
         )
 
     force = payload.force if payload is not None else False
-    generated = generate_project_files(db, project, force=force)
+    generated = generate_project_change(db, project, force=force)
     db.commit()
     ordered = sorted(generated, key=lambda item: item.file_path)
     return GeneratedFilesListResponse(
