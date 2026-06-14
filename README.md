@@ -1,29 +1,25 @@
 # Harness Builder
 
-AI コーディングエージェント向けの運用ルール（ハーネス）を、質問票とプリセットから生成する Web アプリケーションです。ログインしたユーザーがプロジェクトを作成し、回答を保存したうえで Jinja2 テンプレートから複数ファイルを一括生成し、ブラウザで編集したあと ZIP でエクスポートできます。
+AI コーディングエージェント向けの運用ルール（ハーネス）を、質問票とプリセットから OpenSpec change パッケージとして生成する Web アプリケーションです。ログインしたユーザーがプロジェクトを作成し、回答を保存したうえで Jinja2 テンプレートから `openspec/changes/setup-ai-harness/` を生成し、ブラウザで編集したあと ZIP でエクスポートできます。
 
 ## 主な機能
 
 - **ユーザー認証**: メール・パスワードの登録／ログイン／ログアウト。セッション Cookie（`credentials: "include"`）で API と連携します。
 - **プリセット**: FastAPI + React、Next.js、Python API、SaaS Web App など。選択すると質問の初期値が埋まります。
 - **プロジェクトウィザード**: プロジェクト種別、言語、フレームワーク、利用 AI ツール、テスト・Lint、レビュー方針などのアンケートに回答します（必須項目はバックエンドでも検証されます）。
-- **ファイル生成・編集**: 生成後に一覧・ツリー表示で開き、内容を PUT で更新できます。
-- **ZIP エクスポート**: 生成物をディレクトリ構造のままダウンロードします。
+- **OpenSpec change 生成・編集**: 生成後に一覧・ツリー表示で開き、`proposal.md` や `tasks.md` を PUT で更新できます。
+- **ZIP エクスポート**: 生成物をディレクトリ構造のままダウンロードし、対象リポジトリのルートに展開できます。
 
-## 生成されるファイルの例
+## 生成されるパッケージ
 
-バックエンドの Jinja2 テンプレートから、主に次のようなファイルが出力されます（利用ツールの回答に応じてツール固有ファイルはスキップされる場合があります）。
+バックエンドの Jinja2 テンプレートから、主に次のような OpenSpec change パッケージが出力されます。従来のハーネス下書き（`AGENTS.md`、`CLAUDE.md`、`scripts/verify.sh` など）は `tasks.md` にインライン同梱され、`/opsx:apply setup-ai-harness` 実行時に対象リポジトリへ合わせて洗練・作成されます。
 
 | 出力パス | 概要 |
 | --- | --- |
-| `AGENTS.md` | エージェント向けルール |
-| `PROJECT_RULES.md` | プロジェクトルール |
-| `CLAUDE.md` | Claude 向け（ツールに Claude が含まれる場合） |
-| `.codex/rules/general.md` | Codex 向け |
-| `.cursor/rules/project.mdc` | Cursor 向け |
-| `prompts/*.md` | 機能・バグ修正・レビュー用プロンプト |
-| `definition_of_done.md` など | 品質・レビュー・テスト方針 |
-| `scripts/verify.sh` | 検証スクリプト |
+| `openspec/changes/setup-ai-harness/proposal.md` | change の目的と影響 |
+| `openspec/changes/setup-ai-harness/tasks.md` | ハーネス作成タスクと参照下書き |
+| `openspec/changes/setup-ai-harness/.openspec.yaml` | spec-driven change 設定 |
+| `openspec/changes/setup-ai-harness/specs/ai-coding-harness/spec.md` | ハーネス capability の delta spec |
 
 ## 技術スタック
 
@@ -118,10 +114,12 @@ cd frontend && pnpm test:e2e
 | POST | `/projects` | プロジェクト作成 |
 | GET | `/projects/{id}` | プロジェクト取得 |
 | PUT | `/projects/{id}/answers` | アンケート回答の更新（既知キーは型・選択肢を検証し正規化して保存。不正時 400） |
-| POST | `/projects/{id}/generate` | ファイル生成（ボディ `{"force": bool}` 省略時 `false`。必須回答が欠けると 400） |
-| GET | `/projects/{id}/files` | 生成ファイル一覧（各項目に `is_edited` を含む） |
-| GET/PUT | `/projects/{id}/files/{file_id}` | 生成ファイルの取得・更新（内容変更時のみ `is_edited: true`） |
+| POST | `/projects/{id}/generate` | OpenSpec change 生成（ボディ `{"force": bool}` 省略時 `false`。必須回答が欠けると 400） |
+| GET | `/projects/{id}/files` | 生成された change ファイル一覧（各項目に `is_edited` を含む） |
+| GET/PUT | `/projects/{id}/files/{file_id}` | 生成された change ファイルの取得・更新（内容変更時のみ `is_edited: true`） |
 | GET | `/projects/{id}/export` | ZIP ダウンロード |
+
+ZIP は対象リポジトリのルートに展開し、対象リポジトリで `/opsx:apply setup-ai-harness` を実行します。
 
 ## フロントエンドのルーティング
 
@@ -135,3 +133,4 @@ cd frontend && pnpm test:e2e
 ## 関連ドキュメント
 
 - バックエンドの DB・Alembic 運用: [backend/README.md](backend/README.md)
+- フロントエンドの開発手順: [frontend/README.md](frontend/README.md)

@@ -20,5 +20,7 @@ describe("AppHomePage", () => {
     expect(
       screen.getByText("AI コーディングの運用ルールを、会話の延長で組み立てる。"),
     ).toBeInTheDocument();
+    expect(screen.getByText("OpenSpec change package")).toBeInTheDocument();
+    expect(screen.getByText(/opsx:apply でハーネスを作成します。/)).toBeInTheDocument();
   });
 });

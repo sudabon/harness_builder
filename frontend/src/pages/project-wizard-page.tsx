@@ -101,7 +101,7 @@ export function ProjectWizardPage() {
       await api.generateFiles(ensuredProjectId);
       navigate(`/projects/${ensuredProjectId}`);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "ファイル生成に失敗しました。");
+      setError(submitError instanceof Error ? submitError.message : "change 生成に失敗しました。");
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +183,7 @@ export function ProjectWizardPage() {
               </Button>
             ) : (
               <Button disabled={isSubmitting} onClick={() => void generate()} type="button">
-                {isSubmitting ? "生成中..." : "ファイル生成を実行"}
+                {isSubmitting ? "生成中..." : "change 生成を実行"}
               </Button>
             )}
           </div>

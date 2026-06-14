@@ -1,0 +1,32 @@
+# Proposal: {{ change_name }}
+
+## Why
+
+{{ project_name }} needs an AI coding harness that reflects its actual stack and operating rules without introducing an external AI API workflow. This change packages the requested harness as an OpenSpec change so it can be expanded into the target repository with `/opsx:apply {{ change_name }}`.
+
+Project context:
+
+- Project kind: {{ project_kind or "未設定" }}
+- Languages: {{ languages_csv }}
+- Frameworks: {{ frameworks_csv }}
+- AI tools: {{ ai_tools_csv }}
+- Tests: {{ tests_csv }}
+- Lint / format: {{ lint_csv }}
+
+## What Changes
+
+- Add an `ai-coding-harness` capability for the target repository.
+- Create agent rules, tool-specific configuration, reusable prompts, quality guidance, and verification helpers from the reference drafts in `tasks.md`.
+- Adapt each draft to the target repository's real directory structure, dependencies, commands, and existing conventions before writing files.
+
+## Capabilities
+
+### New Capabilities
+
+- `ai-coding-harness`
+
+## Impact
+
+- Adds repository-local harness files for the selected AI tools: {{ ai_tools_csv }}.
+- Documents project rules, review policy, branch strategy, CI commands, security requirements, and failure examples from the questionnaire.
+- Requires running `openspec validate {{ change_name }}` plus the repository's lint and test commands before completion.

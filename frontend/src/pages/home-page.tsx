@@ -14,12 +14,12 @@ const features = [
   },
   {
     title: "生成後すぐ編集",
-    description: "ブラウザ上でルール・テンプレートを確認し、その場で修正できます。",
+    description: "ブラウザ上で proposal や tasks を確認し、その場で修正できます。",
     icon: Files,
   },
   {
-    title: "ZIP エクスポート",
-    description: "ツール別設定やプロンプトをディレクトリ構造ごとまとめてダウンロードします。",
+    title: "OpenSpec 適用",
+    description: "change パッケージを ZIP で持ち帰り、対象リポジトリで opsx:apply します。",
     icon: FileArchive,
   },
 ];
@@ -37,7 +37,8 @@ export function AppHomePage() {
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
             プロジェクト種別、利用言語、AI ツール、レビュー方針を入力すると、
-            `AGENTS.md`、`.codex/rules`、`.cursor/rules`、品質チェックリストまで一括生成します。
+            OpenSpec change パッケージを生成します。対象リポジトリで `/opsx:apply setup-ai-harness`
+            を実行すると、ハーネス一式が実情に合わせて作成されます。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -55,24 +56,24 @@ export function AppHomePage() {
         <Card className="border-secondary/20 bg-secondary text-secondary-foreground">
           <CardHeader>
             <p className="section-label text-secondary-foreground/70">Generated Outputs</p>
-            <CardTitle className="text-3xl">12 files in one pass</CardTitle>
+            <CardTitle className="text-3xl">OpenSpec change package</CardTitle>
             <CardDescription className="text-secondary-foreground/75">
-              Claude / Codex / Cursor の複数選択にも対応します。
+              Claude / Codex / Cursor の選択に応じた下書きを tasks に同梱します。
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="rounded-3xl bg-white/12 p-4 font-mono">
-              AGENTS.md
+              openspec/changes/setup-ai-harness/proposal.md
               <br />
-              PROJECT_RULES.md
+              openspec/changes/setup-ai-harness/tasks.md
               <br />
-              prompts/feature.md
+              openspec/changes/setup-ai-harness/.openspec.yaml
               <br />
-              scripts/verify.sh
+              specs/ai-coding-harness/spec.md
             </div>
             <div className="flex items-center gap-3 rounded-3xl bg-white/12 p-4">
               <Binary className="h-5 w-5" />
-              構造化されたプロンプトと運用ルールを ZIP で持ち帰れます。
+              ZIP を対象リポジトリのルートに展開し、opsx:apply でハーネスを作成します。
             </div>
           </CardContent>
         </Card>
