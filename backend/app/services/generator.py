@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -35,6 +36,14 @@ class TemplateDefinition:
 class RenderedTemplate:
     output_path: str
     content: str
+
+    @property
+    def markdown_fence(self) -> str:
+        longest_backtick_run = max(
+            (len(match.group(0)) for match in re.finditer(r"`+", self.content)),
+            default=0,
+        )
+        return "`" * max(4, longest_backtick_run + 1)
 
 
 TEMPLATE_DEFINITIONS = [
@@ -70,6 +79,7 @@ def _environment() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=select_autoescape(enabled_extensions=("html", "xml")),
+        undefined=StrictUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
     )
@@ -187,9 +197,20 @@ def _delete_orphan_generated_files(
     session: Session,
     existing: dict[str, GeneratedFile],
     selected_paths: set[str],
-) -> None:
+    *,
+    force: bool,
+) -> list[GeneratedFile]:
+    preserved: list[GeneratedFile] = []
     for file_path, item in list(existing.items()):
         if file_path not in selected_paths:
+            if item.is_edited and not force:
+                logger.info(
+                    "Preserving edited orphan generated file: project_id=%s path=%s",
+                    item.project_id,
+                    file_path,
+                )
+                preserved.append(item)
+                continue
             logger.info(
                 "Deleting orphan generated file: project_id=%s path=%s is_edited=%s",
                 item.project_id,
@@ -198,26 +219,7 @@ def _delete_orphan_generated_files(
             )
             session.delete(item)
             del existing[file_path]
-
-
-def generate_project_files(
-    session: Session, project: Project, *, force: bool = False
-) -> list[GeneratedFile]:
-    answers = get_project_answers(session, project)
-    rendered_drafts = _render_all_drafts(project, answers)
-    existing = _load_existing_generated_files(session, project)
-    _delete_orphan_generated_files(
-        session, existing, {rendered.output_path for rendered in rendered_drafts}
-    )
-    generated_items: list[GeneratedFile] = []
-
-    for rendered in rendered_drafts:
-        generated_items.append(
-            _upsert_generated_file(session, project, rendered, existing, force)
-        )
-
-    session.flush()
-    return generated_items
+    return preserved
 
 
 def generate_project_change(
@@ -237,10 +239,12 @@ def generate_project_change(
     ]
 
     existing = _load_existing_generated_files(session, project)
-    _delete_orphan_generated_files(
-        session, existing, {rendered.output_path for rendered in rendered_change_files}
+    generated_items = _delete_orphan_generated_files(
+        session,
+        existing,
+        {rendered.output_path for rendered in rendered_change_files},
+        force=force,
     )
-    generated_items: list[GeneratedFile] = []
 
     for rendered in rendered_change_files:
         generated_items.append(

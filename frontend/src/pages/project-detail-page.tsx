@@ -174,7 +174,7 @@ export function ProjectDetailPage() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     編集内容を保護したまま再生成するか、テンプレート出力で上書きするかを選択してください。
-                    選択から外れたツールの下書きは、編集済みでも tasks.md から削除されます。
+                    通常再生成では編集済みファイルを保持し、上書き再生成ではテンプレート出力で置き換えます。
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={() => void handleRegenerate(false)} type="button" variant="secondary">

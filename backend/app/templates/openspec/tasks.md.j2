@@ -5,9 +5,9 @@
 {% for file in rendered_files %}
 - [ ] {{ loop.index }}. Create or update `{{ file.output_path }}`. Use the draft below as a starting point, then refine and complete it for the target repository's real directory structure, dependencies, existing conventions, and commands. Do not copy the draft verbatim.
 
-```text
+{{ file.markdown_fence }}text
 {{ file.content | trim }}
-```
+{{ file.markdown_fence }}
 
 {% endfor %}
 ## 2. Verification

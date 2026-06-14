@@ -1,7 +1,12 @@
 import io
+from datetime import date
 from zipfile import ZipFile
 
+import pytest
+from jinja2 import UndefinedError
+
 from app.services.answers import answer_value_as_list
+from app.services.generator import _environment
 
 
 CHANGE_ROOT = "openspec/changes/setup-ai-harness"
@@ -112,6 +117,58 @@ def test_generate_codex_only_includes_change_package_with_common_and_codex_draft
         assert f"`{draft_path}`" in tasks
     assert f"`{TOOL_SPECIFIC_PATHS['Claude']}`" not in tasks
     assert f"`{TOOL_SPECIFIC_PATHS['Cursor']}`" not in tasks
+
+
+def test_change_package_files_include_expected_openspec_content(client):
+    project_id = _create_seeded_project(client, ai_tools=["Codex"])
+
+    generated = client.post(f"/api/v1/projects/{project_id}/generate")
+    assert generated.status_code == 200
+
+    contents = _file_contents_by_path(client, project_id)
+    assert contents[OPENSPEC_CONFIG_PATH] == (
+        f"schema: spec-driven\ncreated: {date.today().isoformat()}\n"
+    )
+
+    proposal = contents[PROPOSAL_PATH]
+    assert "# Proposal: setup-ai-harness" in proposal
+    assert "Harness Demo" in proposal
+    assert "Project kind: Web" in proposal
+    assert "Languages: Python, TypeScript" in proposal
+    assert "Frameworks: FastAPI, React" in proposal
+    assert "AI tools: Codex" in proposal
+
+    spec = contents[SPEC_PATH]
+    assert "# Delta: ai-coding-harness" in spec
+    assert "## ADDED Requirements" in spec
+    assert "### Requirement:" in spec
+    assert "#### Scenario:" in spec
+    assert "/opsx:apply setup-ai-harness" in spec
+
+
+def test_tasks_draft_fence_handles_answers_containing_backticks(client):
+    project_id = _create_seeded_project(client, ai_tools=["Codex"])
+    updated = client.put(
+        f"/api/v1/projects/{project_id}/answers",
+        json={
+            "answers": {
+                "failure_examples": "事故例:\n```bash\nrm -rf .\n```",
+            }
+        },
+    )
+    assert updated.status_code == 200
+
+    generated = client.post(f"/api/v1/projects/{project_id}/generate")
+    assert generated.status_code == 200
+
+    tasks = _tasks_content(client, project_id)
+    assert "````text\n# PROJECT_RULES.md" in tasks
+    assert "```bash\nrm -rf .\n```" in tasks
+
+
+def test_template_environment_rejects_missing_variables():
+    with pytest.raises(UndefinedError):
+        _environment().from_string("{{ missing_value }}").render()
 
 
 def test_generate_reports_schema_required_answers(client):
@@ -359,7 +416,7 @@ def test_force_regeneration_overwrites_edited_file_and_resets_flag(client):
     assert detail.json()["is_edited"] is False
 
 
-def test_orphan_deletion_applies_to_edited_files(client, session):
+def test_normal_regeneration_preserves_edited_orphan_files(client, session):
     from app.db.models import GeneratedFile
 
     project_id = _create_seeded_project(client, ai_tools=["Claude", "Cursor"])
@@ -376,6 +433,42 @@ def test_orphan_deletion_applies_to_edited_files(client, session):
     session.commit()
 
     regenerated = client.post(f"/api/v1/projects/{project_id}/generate")
+    assert regenerated.status_code == 200
+    paths = {item["file_path"] for item in regenerated.json()["items"]}
+    assert paths == CHANGE_PACKAGE_PATHS | {"legacy/edited.md"}
+
+    files = client.get(f"/api/v1/projects/{project_id}/files")
+    listed_paths = {item["file_path"] for item in files.json()["items"]}
+    assert "legacy/edited.md" in listed_paths
+
+    exported = client.get(f"/api/v1/projects/{project_id}/export")
+    assert exported.status_code == 200
+    with ZipFile(io.BytesIO(exported.content)) as archive:
+        names = set(archive.namelist())
+        preserved_content = archive.read("legacy/edited.md").decode()
+    assert "legacy/edited.md" in names
+    assert preserved_content == "# 編集済みレガシー\n"
+
+
+def test_force_regeneration_removes_edited_orphan_files(client, session):
+    from app.db.models import GeneratedFile
+
+    project_id = _create_seeded_project(client, ai_tools=["Claude", "Cursor"])
+    client.post(f"/api/v1/projects/{project_id}/generate")
+
+    session.add(
+        GeneratedFile(
+            project_id=project_id,
+            file_path="legacy/edited.md",
+            content="# 編集済みレガシー\n",
+            is_edited=True,
+        )
+    )
+    session.commit()
+
+    regenerated = client.post(
+        f"/api/v1/projects/{project_id}/generate", json={"force": True}
+    )
     assert regenerated.status_code == 200
     paths = {item["file_path"] for item in regenerated.json()["items"]}
     assert paths == CHANGE_PACKAGE_PATHS
