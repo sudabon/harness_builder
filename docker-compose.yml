@@ -13,20 +13,18 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: backend
+      dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      - db
     environment:
-      DATABASE_URL: postgresql+psycopg2://harness:harness@db:5432/harness_builder
-      FRONTEND_ORIGIN: http://localhost:5173
+      DATABASE_URL: postgresql+psycopg2://harness:harness@host.docker.internal:5432/harness_builder
+      BACKEND_CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
       SESSION_SECRET: dev-session-secret
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres-data:
-  frontend-node-modules:
