@@ -47,9 +47,6 @@ export function AppHomePage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href="#flow">フローを見る</a>
-            </Button>
           </div>
         </div>
 
@@ -65,6 +62,8 @@ export function AppHomePage() {
             <div className="rounded-3xl bg-white/12 p-4 font-mono">
               openspec/changes/setup-ai-harness/proposal.md
               <br />
+              openspec/changes/setup-ai-harness/design.md
+              <br />
               openspec/changes/setup-ai-harness/tasks.md
               <br />
               openspec/changes/setup-ai-harness/.openspec.yaml
@@ -79,7 +78,7 @@ export function AppHomePage() {
         </Card>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3" id="flow">
+      <section className="grid gap-5 md:grid-cols-3">
         {features.map(({ title, description, icon: Icon }) => (
           <Card key={title}>
             <CardHeader>

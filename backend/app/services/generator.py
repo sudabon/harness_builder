@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.core.questionnaire import (
     answer_value_as_list,
     normalize_questionnaire_answers,
+    project_kind_profile,
 )
 from app.db.models import GeneratedFile, Project
 from app.services.answers import get_project_answers
@@ -67,6 +68,7 @@ TEMPLATE_DEFINITIONS = [
 
 CHANGE_TEMPLATE_DEFINITIONS = [
     TemplateDefinition("openspec/proposal.md.j2", f"{CHANGE_ROOT}/proposal.md"),
+    TemplateDefinition("openspec/design.md.j2", f"{CHANGE_ROOT}/design.md"),
     TemplateDefinition("openspec/tasks.md.j2", f"{CHANGE_ROOT}/tasks.md"),
     TemplateDefinition("openspec/openspec.yaml.j2", f"{CHANGE_ROOT}/.openspec.yaml"),
     TemplateDefinition(
@@ -92,11 +94,15 @@ def build_template_context(project: Project, answers: dict[str, Any]) -> dict[st
     lint_tools = answer_value_as_list(normalized_answers.get("lint_format"))
     frameworks = answer_value_as_list(normalized_answers.get("frameworks"))
     languages = answer_value_as_list(normalized_answers.get("languages"))
+    project_kind = normalized_answers.get("project_kind", "")
+    kind_profile = project_kind_profile(project_kind)
 
     return {
         "project_name": project.name,
         "preset_id": project.preset_id or "custom",
-        "project_kind": normalized_answers.get("project_kind", ""),
+        "project_kind": project_kind,
+        "project_kind_label": kind_profile.label if kind_profile else project_kind,
+        "project_kind_focus": kind_profile.focus if kind_profile else "未設定",
         "languages": languages,
         "frameworks": frameworks,
         "ai_tools": ai_tools,

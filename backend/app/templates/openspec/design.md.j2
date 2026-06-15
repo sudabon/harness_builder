@@ -1,0 +1,87 @@
+# Design: {{ change_name }}
+
+## Context
+
+This change packages an AI coding harness for {{ project_name }} as an OpenSpec change. The harness reflects the project's actual stack and operating rules without introducing an external AI API workflow. The generated `design.md` is a draft to be refined when `/opsx:apply {{ change_name }}` is run against the target repository.
+
+Project context:
+
+- Project kind: {{ project_kind or "未設定" }}{% if project_kind_label %} ({{ project_kind_label }}){% endif %}
+- Harness focus: {{ project_kind_focus }}
+- Languages: {{ languages_csv }}
+- Frameworks: {{ frameworks_csv }}
+- AI tools: {{ ai_tools_csv }}
+- Tests: {{ tests_csv }}
+- Lint / format: {{ lint_csv }}
+- Review policy: {{ review_policy or "未設定" }}
+- Branch strategy: {{ branch_strategy or "未設定" }}
+- CI command: {{ ci_command or "未設定" }}
+- Deploy constraints: {{ deploy_constraints or "未設定" }}
+- Security requirements: {{ security_requirements or "未設定" }}
+- Prohibited actions: {{ prohibited_actions or "未設定" }}
+- Failure examples: {{ failure_examples or "未設定" }}
+- Naming convention: {{ naming_convention or "未設定" }}
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Create an `ai-coding-harness` capability tailored to {{ project_kind_label or project_kind or "未設定" }} projects using {{ languages_csv }} and {{ frameworks_csv }}.
+- Generate agent rules, tool-specific configuration, reusable prompts, quality guidance, and verification helpers from the reference drafts in `tasks.md`.
+- Adapt each draft to the target repository's real directory structure, dependencies, commands, and existing conventions before writing files.
+- Support the selected AI tools: {{ ai_tools_csv }}.
+
+**Non-Goals:**
+
+- Introducing an external AI API workflow or dynamic AI-generated content at generation time.
+- Changing the change name or restructuring other templates in this package.
+- Merging `specs/ai-coding-harness/spec.md` into this design document.
+
+## Decisions
+
+### D1: Package harness files as an OpenSpec change
+
+The harness is delivered as `openspec/changes/{{ change_name }}/` so it can be applied with `/opsx:apply {{ change_name }}` and validated with `openspec validate {{ change_name }}`.
+
+- **Reason**: Aligns with OpenSpec propose/apply workflow and keeps harness creation auditable.
+- **Alternative considered**: Writing harness files directly at generation time — rejected because the target repository structure is unknown until apply.
+
+### D2: Embed reference drafts in tasks.md
+
+Agent rules, prompts, quality docs, and `scripts/verify.sh` are inlined in `tasks.md` as fenced reference drafts rather than separate generated files.
+
+- **Reason**: The generator produces a portable change package; apply-time refinement adapts drafts to the real repo.
+- **Alternative considered**: Generating final harness files upfront — rejected because paths and conventions differ per repository.
+
+### D3: Tool-specific files follow questionnaire selection
+
+Only configuration for selected AI tools ({{ ai_tools_csv }}) is included in the reference drafts.
+
+- **Reason**: Avoids shipping unused tool configs and matches team adoption.
+- **Alternative considered**: Always generating all tool configs — rejected as noisy for teams using a subset.
+
+### D4: Operating constraints from the questionnaire
+
+Review policy (`{{ review_policy or "未設定" }}`), branch strategy (`{{ branch_strategy or "未設定" }}`), CI (`{{ ci_command or "未設定" }}`), security (`{{ security_requirements or "未設定" }}`), and naming (`{{ naming_convention or "未設定" }}) are recorded here and propagated into harness rules during apply.
+
+## Risks / Trade-offs
+
+- [Drafts may not match target repo layout] → Apply step MUST refine paths, commands, and conventions before writing files.
+- [Questionnaire answers may be incomplete] → Free-text fields default to `未設定`; apply should prompt for gaps.
+- [Multiple AI tools increase maintenance] → Only selected tools ({{ ai_tools_csv }}) are included in drafts.
+- [Strict verification depends on CI command] → Default CI reference: `{{ ci_command or "未設定" }}`; update during apply if the repo uses different commands.
+
+## Migration Plan
+
+1. Export the generated change package ZIP to the target repository root.
+2. Run `/opsx:apply {{ change_name }}` to refine drafts and create harness files.
+3. Run `openspec validate {{ change_name }}` and the repository's lint/test commands (`{{ tests_csv }}`, `{{ lint_csv }}`).
+4. Commit harness files and the applied change artifacts.
+
+Rollback: Revert the apply commit and remove generated harness files; no database schema changes are involved.
+
+## Open Questions
+
+- Final directory layout for harness files in the target repository (resolve during apply).
+- Whether additional capabilities beyond `ai-coding-harness` are needed after inspecting the repo.
+- Exact CI integration for deploy constraints: {{ deploy_constraints or "未設定" }}.

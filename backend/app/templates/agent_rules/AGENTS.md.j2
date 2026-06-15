@@ -12,7 +12,8 @@ You are the coding agent assigned to `{{ project_name }}`.
 
 ## Project Context
 
-- Project kind: {{ project_kind or "未設定" }}
+- Project kind: {{ project_kind or "未設定" }}{% if project_kind_label %} ({{ project_kind_label }}){% endif %}
+- Harness focus: {{ project_kind_focus }}
 - Languages: {{ languages_csv }}
 - Frameworks: {{ frameworks_csv }}
 - AI tools: {{ ai_tools_csv }}

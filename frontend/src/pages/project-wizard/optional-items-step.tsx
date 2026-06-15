@@ -13,11 +13,13 @@ export function OptionalItemsStep({ answers, setValue }: AnswerStepProps) {
           {field.inputType === "textarea" ? (
             <Textarea
               onChange={(event) => setValue(field.key, event.target.value)}
+              placeholder={field.placeholder}
               value={(answers[field.key] as string) ?? ""}
             />
           ) : (
             <Input
               onChange={(event) => setValue(field.key, event.target.value)}
+              placeholder={field.placeholder}
               value={(answers[field.key] as string) ?? ""}
             />
           )}

@@ -1,11 +1,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AnswerMap, Preset } from "@/lib/types";
 
+import {
+  getProjectKindProfile,
+  questionnaireFields,
+} from "./questionnaire-schema";
+
 interface ConfirmationStepProps {
   answers: AnswerMap;
   presets: Preset[];
   projectName: string;
   selectedPresetId: string | null;
+}
+
+function formatAnswerValue(key: string, value: AnswerMap[string]) {
+  if (key === "project_kind") {
+    const profile = getProjectKindProfile(value);
+    if (profile) {
+      return `${profile.title} (${profile.value})`;
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value.join(", ") : "未設定";
+  }
+
+  return value || "未設定";
 }
 
 export function ConfirmationStep({
@@ -28,10 +48,10 @@ export function ConfirmationStep({
             <span className="font-medium">プリセット:</span>{" "}
             {presets.find((preset) => preset.id === selectedPresetId)?.name ?? "カスタム"}
           </p>
-          {Object.entries(answers).map(([key, value]) => (
-            <p key={key}>
-              <span className="font-medium">{key}:</span>{" "}
-              {Array.isArray(value) ? value.join(", ") : value || "未設定"}
+          {questionnaireFields.map((field) => (
+            <p key={field.key}>
+              <span className="font-medium">{field.label}:</span>{" "}
+              {formatAnswerValue(field.key, answers[field.key])}
             </p>
           ))}
         </CardContent>

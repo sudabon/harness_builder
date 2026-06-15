@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+import { projectNamePlaceholder } from "./questionnaire-schema";
 import type { PresetStepProps } from "./types";
 
 export function PresetStep({
@@ -14,7 +15,11 @@ export function PresetStep({
     <div className="space-y-6">
       <label className="block space-y-2">
         <span className="text-sm font-medium">プロジェクト名</span>
-        <Input onChange={(event) => setProjectName(event.target.value)} value={projectName} />
+        <Input
+          onChange={(event) => setProjectName(event.target.value)}
+          placeholder={projectNamePlaceholder}
+          value={projectName}
+        />
       </label>
 
       <div className="grid gap-3 md:grid-cols-2">

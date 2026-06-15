@@ -5,6 +5,7 @@ from zipfile import ZipFile
 CHANGE_ROOT = "openspec/changes/setup-ai-harness"
 CHANGE_PACKAGE_PATHS = {
     f"{CHANGE_ROOT}/proposal.md",
+    f"{CHANGE_ROOT}/design.md",
     f"{CHANGE_ROOT}/tasks.md",
     f"{CHANGE_ROOT}/.openspec.yaml",
     f"{CHANGE_ROOT}/specs/ai-coding-harness/spec.md",

@@ -6,6 +6,8 @@
 
 The repository MUST provide an AI coding harness adapted to its project type, languages, frameworks, selected AI tools, and team operating constraints.
 
+The harness MUST account for the selected project type focus: {{ project_kind_focus }}
+
 #### Scenario: Harness files are created from refined drafts
 - **WHEN** `/opsx:apply {{ change_name }}` is run against this change
 - **THEN** the resulting harness files are created from the reference drafts in `tasks.md`

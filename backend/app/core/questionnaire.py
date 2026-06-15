@@ -21,14 +21,54 @@ class QuestionDefinition:
         return self.default
 
 
+@dataclass(frozen=True)
+class ProjectKindProfile:
+    value: str
+    label: str
+    description: str
+    focus: str
+
+
+PROJECT_KIND_PROFILES: tuple[ProjectKindProfile, ...] = (
+    ProjectKindProfile(
+        value="Web",
+        label="Webアプリ",
+        description="ブラウザで使う画面体験が主役のリポジトリ。",
+        focus="UI状態、アクセシビリティ、E2E、画面回帰を重視する。",
+    ),
+    ProjectKindProfile(
+        value="API",
+        label="APIサービス",
+        description="外部または内部システムへ機能を提供するサービス。",
+        focus="API契約、認証、エラー設計、互換性、負荷を重視する。",
+    ),
+    ProjectKindProfile(
+        value="OSS",
+        label="OSS / ライブラリ",
+        description="公開・再利用・配布されるパッケージやCLI。",
+        focus="README、SemVer、破壊的変更、リリース手順を重視する。",
+    ),
+    ProjectKindProfile(
+        value="SaaS",
+        label="SaaSプロダクト",
+        description="顧客向けに継続運用するプロダクト。",
+        focus="テナント分離、課金、監査ログ、SLO、セキュリティを重視する。",
+    ),
+)
+PROJECT_KIND_OPTIONS = tuple(profile.value for profile in PROJECT_KIND_PROFILES)
+PROJECT_KIND_PROFILE_BY_VALUE = {
+    profile.value: profile for profile in PROJECT_KIND_PROFILES
+}
+
+
 QUESTIONNAIRE_FIELDS: tuple[QuestionDefinition, ...] = (
     QuestionDefinition(
         key="project_kind",
-        label="プロジェクト種別",
+        label="成果物タイプ",
         input_type="single_choice",
         required=True,
         default="",
-        options=("Web", "API", "OSS", "SaaS"),
+        options=PROJECT_KIND_OPTIONS,
     ),
     QuestionDefinition(
         key="languages",
@@ -44,7 +84,7 @@ QUESTIONNAIRE_FIELDS: tuple[QuestionDefinition, ...] = (
         input_type="multi_choice",
         required=True,
         default=(),
-        options=("FastAPI", "React", "Next.js", "Django"),
+        options=("FastAPI", "React", "Next.js", "Django", "Echo", "Buf"),
     ),
     QuestionDefinition(
         key="ai_tools",
@@ -60,7 +100,7 @@ QUESTIONNAIRE_FIELDS: tuple[QuestionDefinition, ...] = (
         input_type="multi_choice",
         required=True,
         default=(),
-        options=("pytest", "jest", "playwright"),
+        options=("pytest", "vitest", "testing", "jest", "playwright"),
     ),
     QuestionDefinition(
         key="lint_format",
@@ -68,7 +108,7 @@ QUESTIONNAIRE_FIELDS: tuple[QuestionDefinition, ...] = (
         input_type="multi_choice",
         required=True,
         default=(),
-        options=("ruff", "eslint", "prettier"),
+        options=("ruff", "mypy", "eslint", "prettier", "gofmt", "golangci-lint"),
     ),
     QuestionDefinition(
         key="prohibited_actions",
@@ -149,6 +189,11 @@ def answer_value_as_string(value: Any) -> str:
     if isinstance(value, list):
         return ", ".join(str(item) for item in value)
     return str(value)
+
+
+def project_kind_profile(value: Any) -> ProjectKindProfile | None:
+    project_kind = answer_value_as_string(value)
+    return PROJECT_KIND_PROFILE_BY_VALUE.get(project_kind)
 
 
 def normalize_answer_value(key: str, value: Any) -> Any:

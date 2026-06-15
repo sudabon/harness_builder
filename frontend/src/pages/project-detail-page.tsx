@@ -144,7 +144,7 @@ export function ProjectDetailPage() {
 
   return (
     <div className="shell space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[320px_1fr]">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -219,7 +219,7 @@ export function ProjectDetailPage() {
           </Card>
         </div>
 
-        <Card>
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -245,23 +245,31 @@ export function ProjectDetailPage() {
               ) : null}
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {message ? <p className="text-sm text-secondary">{message}</p> : null}
-            {error ? <p className="text-sm text-danger">{error}</p> : null}
+          <CardContent className="space-y-4 p-0">
+            {message || error ? (
+              <div className="space-y-4 px-6 pt-0">
+                {message ? <p className="text-sm text-secondary">{message}</p> : null}
+                {error ? <p className="text-sm text-danger">{error}</p> : null}
+              </div>
+            ) : null}
 
             {activeFile ? (
               isEditing ? (
-                <FileEditor
-                  initialValue={activeFile.content}
-                  isSaving={isSaving}
-                  onCancel={() => setIsEditing(false)}
-                  onSave={handleSave}
-                />
+                <div className="space-y-4 px-6 pb-6">
+                  <FileEditor
+                    initialValue={activeFile.content}
+                    isSaving={isSaving}
+                    onCancel={() => setIsEditing(false)}
+                    onSave={handleSave}
+                  />
+                </div>
               ) : (
                 <CodeViewer content={activeFile.content} />
               )
             ) : (
-              <p className="text-sm text-muted-foreground">生成された change ファイルがまだありません。</p>
+              <p className="px-6 pb-6 text-sm text-muted-foreground">
+                生成された change ファイルがまだありません。
+              </p>
             )}
           </CardContent>
         </Card>

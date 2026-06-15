@@ -11,12 +11,14 @@ from app.services.generator import _environment
 
 CHANGE_ROOT = "openspec/changes/setup-ai-harness"
 PROPOSAL_PATH = f"{CHANGE_ROOT}/proposal.md"
+DESIGN_PATH = f"{CHANGE_ROOT}/design.md"
 TASKS_PATH = f"{CHANGE_ROOT}/tasks.md"
 OPENSPEC_CONFIG_PATH = f"{CHANGE_ROOT}/.openspec.yaml"
 SPEC_PATH = f"{CHANGE_ROOT}/specs/ai-coding-harness/spec.md"
 
 CHANGE_PACKAGE_PATHS = {
     PROPOSAL_PATH,
+    DESIGN_PATH,
     TASKS_PATH,
     OPENSPEC_CONFIG_PATH,
     SPEC_PATH,
@@ -137,6 +139,17 @@ def test_change_package_files_include_expected_openspec_content(client):
     assert "Languages: Python, TypeScript" in proposal
     assert "Frameworks: FastAPI, React" in proposal
     assert "AI tools: Codex" in proposal
+
+    design = contents[DESIGN_PATH]
+    assert "# Design: setup-ai-harness" in design
+    assert "## Context" in design
+    assert "## Decisions" in design
+    assert "Harness Demo" in design
+    assert "Languages: Python, TypeScript" in design
+    assert "Frameworks: FastAPI, React" in design
+    assert "AI tools: Codex" in design
+    assert "Review policy: 厳格" in design
+    assert "Branch strategy: trunk-based" in design
 
     spec = contents[SPEC_PATH]
     assert "# Delta: ai-coding-harness" in spec
