@@ -10,6 +10,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./pgsql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harness -d harness_builder"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -17,7 +22,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg2://harness:harness@host.docker.internal:5432/harness_builder
+      # Compose の db サービス: @db / Mac ホストの Postgres: @host.docker.internal（.env で上書き可）
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://harness:harness@db:5432/harness_builder}
       BACKEND_CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
       SESSION_SECRET: dev-session-secret
     ports:
@@ -25,6 +31,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        required: false
 
 volumes:
   postgres-data:

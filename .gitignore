@@ -18,6 +18,9 @@
 .cursorignore
 .cursorindexingignore
 
+# Environment
+.env
+
 # Backend
 **/.venv/
 **/__pycache__/

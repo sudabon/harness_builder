@@ -49,7 +49,7 @@ class RenderedTemplate:
 
 TEMPLATE_DEFINITIONS = [
     TemplateDefinition("agent_rules/AGENTS.md.j2", "AGENTS.md"),
-    TemplateDefinition("agent_rules/PROJECT_RULES.md.j2", "PROJECT_RULES.md"),
+    TemplateDefinition("agent_rules/PROJECT_RULES.md.j2", "docs/PROJECT_RULES.md"),
     TemplateDefinition("tool_configs/CLAUDE.md.j2", "CLAUDE.md", "Claude"),
     TemplateDefinition(
         "tool_configs/codex.general.md.j2", ".codex/rules/general.md", "Codex"
@@ -57,12 +57,16 @@ TEMPLATE_DEFINITIONS = [
     TemplateDefinition(
         "tool_configs/cursor.project.mdc.j2", ".cursor/rules/project.mdc", "Cursor"
     ),
-    TemplateDefinition("prompts/feature.md.j2", "prompts/feature.md"),
-    TemplateDefinition("prompts/bugfix.md.j2", "prompts/bugfix.md"),
-    TemplateDefinition("prompts/review.md.j2", "prompts/review.md"),
-    TemplateDefinition("quality/definition_of_done.md.j2", "definition_of_done.md"),
-    TemplateDefinition("quality/review_checklist.md.j2", "review_checklist.md"),
-    TemplateDefinition("quality/test_strategy.md.j2", "test_strategy.md"),
+    TemplateDefinition("prompts/feature.md.j2", "docs/FEATURE.md"),
+    TemplateDefinition("prompts/bugfix.md.j2", "docs/BUGFIX.md"),
+    TemplateDefinition("prompts/review.md.j2", "docs/REVIEW.md"),
+    TemplateDefinition(
+        "quality/definition_of_done.md.j2", "docs/DEFINITION_OF_DONE.md"
+    ),
+    TemplateDefinition(
+        "quality/review_checklist.md.j2", "docs/REVIEW_CHECKLIST.md"
+    ),
+    TemplateDefinition("quality/test_strategy.md.j2", "docs/TEST_STRATEGY.md"),
     TemplateDefinition("scripts/verify.sh.j2", "scripts/verify.sh"),
 ]
 
