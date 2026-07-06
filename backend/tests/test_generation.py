@@ -26,13 +26,13 @@ CHANGE_PACKAGE_PATHS = {
 
 COMMON_DRAFT_PATHS = {
     "AGENTS.md",
-    "PROJECT_RULES.md",
-    "prompts/feature.md",
-    "prompts/bugfix.md",
-    "prompts/review.md",
-    "definition_of_done.md",
-    "review_checklist.md",
-    "test_strategy.md",
+    "docs/PROJECT_RULES.md",
+    "docs/FEATURE.md",
+    "docs/BUGFIX.md",
+    "docs/REVIEW.md",
+    "docs/DEFINITION_OF_DONE.md",
+    "docs/REVIEW_CHECKLIST.md",
+    "docs/TEST_STRATEGY.md",
     "scripts/verify.sh",
 }
 
